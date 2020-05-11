@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="X-UA-Compatible" content="ie=edge">
+  <title>Google Maps</title>
+  <link rel="stylesheet" href="style.css">
+  <link rel="shortcut icon" href="favicon.jpg" type="image/jpg">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.0/jquery.min.js"></script>
+</head>
+<body>
+ 
+    <main>
+        <div class="dropdown-container">
+            <select name="cities" id="citySelector">
+                <option value="" hidden>Select a city</option>
+                <option value="Vinnytsia">Vinnytsia</option>
+                <option value="Kyiv">Kyiv</option>
+                <option value="Berlin">Berlin</option>
+                <option value="Miami">Miami</option>
+                <option value="Paris">Paris</option>
+                <option value="Tokyo">Tokyo</option>
+            </select>
+
+            <div class="select-icon">
+            <svg focusable="false" viewBox="0 0 104 128" width="25" height="35" class="icon">
+                <path 
+                    d="m2e1 95a9 9 0 0 1 -9 9 9 9 0 0 1 -9 -9 9 9 0 0 1 9 -9 9 9 0 0 1 9 9zm0-3e1a9 
+                    9 0 0 1 -9 9 9 9 0 0 1 -9 -9 9 9 0 0 1 9 -9 9 9 0 0 1 9 9zm0-3e1a9 9 0 0 1 -9 9 9 9 0 
+                    0 1 -9 -9 9 9 0 0 1 9 -9 9 9 0 0 1 9 9zm14 55h68v1e1h-68zm0-3e1h68v1e1h-68zm0-3e1h68v1e1h-68z">
+                </path>
+            </svg>
+            </div>
+        </div>
+
+        <div id='map'></div>
+    </main>
+    
+
+    <script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCeDWMcASXx93l0WoSX5Vy9Nz4baixfmJs"></script>
+
+    <script>
+        (function($) {
+            $(window).on('load', function () {
+                let map;
+                let mapContainer = $('#map')[0];
+                let mapCenter = {lat: 49.218383, lng: 28.437557};
+
+                map = new google.maps.Map(mapContainer, {
+                    center: mapCenter,
+                    zoom: 5,
+                    disableDefaultUI: true
+                });
+
+                let icon = {
+                    url: 'marker.png',
+                    scaledSize: new google.maps.Size(50,50)
+                }
+
+                let marker = new google.maps.Marker({
+                    position: mapCenter,
+                    map: map,
+                    icon: icon
+                });
+
+                const citiesData = {
+                    Vinnytsia: {lat: 49.218383, lng: 28.437557},
+                    Kyiv: {lat: 50.449511, lng: 30.532976},
+                    Berlin: {lat: 52.520008, lng: 13.404954},
+                    Miami: {lat: 25.761681, lng: -80.191788},
+                    Paris: {lat: 48.864716, lng: 2.349014},
+                    Tokyo: {lat: 35.652832, lng: 139.839478},
+                }
+
+                $( "#citySelector" ).change(function() {
+                    let selectedCity = this.value;
+                    let currentMapCenter = citiesData[selectedCity];
+                    let currentLocation = new google.maps.LatLng(currentMapCenter.lat, currentMapCenter.lng);
+                    marker.setPosition(currentLocation);
+                    map.setCenter(new google.maps.LatLng(currentMapCenter.lat, currentMapCenter.lng));
+
+                    async function getWeather(lat, lng){
+                        const responce = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${currentMapCenter.lat}&lon=${currentMapCenter.lng}&appid=e1d7b1f1b114cc029093a82ebee89105`);
+                        const result = await responce.json();
+                        const weather = result[`weather`][0];
+
+                        let infowindow = new google.maps.InfoWindow({
+                            content: `Weather in ${selectedCity} - ${weather.description}`
+                        });
+
+                        marker.addListener('click', function() {
+                            infowindow.open(map, marker);
+
+                            setTimeout(() => {
+                                document.body.addEventListener('click', function(event) {
+                                    console.log(event.target);
+                                    infowindow.close();
+                                })
+                            }, 1000)
+                        });
+                    }
+                    getWeather(currentMapCenter.lat, currentMapCenter.lng)
+                });
+            });
+        })(jQuery);
+    </script>
+    
+</body>
+</html>
+
