@@ -73,6 +73,10 @@
                     Tokyo: {lat: 35.652832, lng: 139.839478},
                 }
 
+                let infowindow = new google.maps.InfoWindow({
+                  content: ``
+                });
+
                 $( "#citySelector" ).change(function() {
                     let selectedCity = this.value;
                     let currentMapCenter = citiesData[selectedCity];
@@ -81,24 +85,22 @@
                     map.setCenter(new google.maps.LatLng(currentMapCenter.lat, currentMapCenter.lng));
 
                     async function getWeather(lat, lng){
-                        const responce = await fetch(`https://api.openweathermap.org/data/2.5/weather?lat=${currentMapCenter.lat}&lon=${currentMapCenter.lng}&appid=e1d7b1f1b114cc029093a82ebee89105`);
+                        const link = 'https://api.openweathermap.org/data/2.5/weather';
+                        const key = 'e1d7b1f1b114cc029093a82ebee89105';
+                        const responce = await fetch(`${link}?lat=${currentMapCenter.lat}&lon=${currentMapCenter.lng}&appid=${key}`);
                         const result = await responce.json();
                         const weather = result[`weather`][0];
 
-                        let infowindow = new google.maps.InfoWindow({
-                            content: `Weather in ${selectedCity} - ${weather.description}`
-                        });
-
+                        infowindow.setContent(
+                            `Weather in ${selectedCity} - ${weather.description}`
+                        )
                         marker.addListener('click', function() {
                             infowindow.open(map, marker);
-
-                            setTimeout(() => {
-                                document.body.addEventListener('click', function(event) {
-                                    console.log(event.target);
-                                    infowindow.close();
-                                })
-                            }, 1000)
                         });
+                        let el = document.querySelector("#citySelector");
+                            el.addEventListener('click', function(event) {
+                            infowindow.close();
+                        })
                     }
                     getWeather(currentMapCenter.lat, currentMapCenter.lng)
                 });
