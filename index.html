@@ -94,7 +94,7 @@
                         infowindow.setContent(
                             `Weather in ${selectedCity} - ${weather.description}`
                         )
-                        marker.addListener('click', function() {
+                        marker.addListener('mouseover', function() {
                             infowindow.open(map, marker);
                         });
                         let el = document.querySelector("#citySelector");
